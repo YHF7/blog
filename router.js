@@ -2,7 +2,7 @@
  * @Author: yhf 
  * @Date: 2018-10-06 10:05:16 
  * @Last Modified by: yhf
- * @Last Modified time: 2018-10-06 15:29:17
+ * @Last Modified time: 2018-10-07 15:43:13
  */
 
 // 1.引入模块
@@ -19,7 +19,9 @@ const router = express.Router();
 // 3.路由处理
 // 主页
 router.get('/', function (req, res) {
-    res.render('index.html');
+    res.render('index.html', {
+        user: req.session.user
+    });
 })
 
 // 渲染登录页面
@@ -29,7 +31,39 @@ router.get('/login', function (req, res) {
 
 // 登录业务处理
 router.post('/login', function (req, res) {
-    // res.render('index.html');
+    // 1. 获取表单提交的数据
+    //      req.body
+    // 2. 查询数据库用户密码是否正确
+    // 3. 发送响应
+
+    let body = req.body;
+
+    User.findOne({
+        email: body.email,
+        password: md5(md5(md5(body.password)))
+    },function (err,user) {
+        if (err) {
+            return res.status(500).json({
+                err_code: 500,
+                message: err.message
+            })
+        }
+
+        if (!user) {
+            return res.status(200).json({
+                err_code: 1,
+                message: 'Email or password is invalid.'
+            })
+        }
+
+        // 用户存在，登录成功，通过 Session 记录登录状态
+        req.session.user = user;
+
+        res.status(200).json({
+            err_code: 0,
+            message: 'ok'
+        })
+    })
 })
 
 // 渲染注册页面
@@ -57,8 +91,8 @@ router.post('/register', function (req, res) {
     }, function (err, data) {
         if (err) {
             return res.status(500).json({
-                err_code: 500,//状态码
-                message: 'Internal error.'//状态错误解释
+                err_code: 500, //状态码
+                message: 'Internal error.' //状态错误解释
             });
         }
         if (data) {
@@ -78,6 +112,10 @@ router.post('/register', function (req, res) {
                     message: 'Internal error.'
                 });
             }
+
+            // 注册成功，使用 Session 记录用户的登录状态
+            req.session.user = user;
+
             // Express 提供了一个响应方法：json
             // 该方法接收一个对象作为参数，他会自动帮你把对象转为字符串在发送给浏览器
             res.status(200).json({
@@ -86,6 +124,13 @@ router.post('/register', function (req, res) {
             })
         })
     })
+})
+
+router.get('/logout',function (req,res) {
+    // 清除登录状态
+    // 重定向到登录页
+    req.session.user = null;
+    res.redirect('/login');
 })
 
 // 4.导出路由处理
