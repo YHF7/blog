@@ -2,7 +2,7 @@
  * @Author: yhf 
  * @Date: 2018-10-06 10:05:16 
  * @Last Modified by: yhf
- * @Last Modified time: 2018-10-07 15:43:13
+ * @Last Modified time: 2018-10-07 21:12:38
  */
 
 // 1.引入模块
@@ -30,7 +30,7 @@ router.get('/login', function (req, res) {
 })
 
 // 登录业务处理
-router.post('/login', function (req, res) {
+router.post('/login', function (req, res,next) {
     // 1. 获取表单提交的数据
     //      req.body
     // 2. 查询数据库用户密码是否正确
@@ -43,10 +43,11 @@ router.post('/login', function (req, res) {
         password: md5(md5(md5(body.password)))
     },function (err,user) {
         if (err) {
-            return res.status(500).json({
-                err_code: 500,
-                message: err.message
-            })
+            // return res.status(500).json({
+            //     err_code: 500,
+            //     message: err.message
+            // })
+            return next(err);
         }
 
         if (!user) {
@@ -90,10 +91,11 @@ router.post('/register', function (req, res) {
         }]
     }, function (err, data) {
         if (err) {
-            return res.status(500).json({
-                err_code: 500, //状态码
-                message: 'Internal error.' //状态错误解释
-            });
+            // return res.status(500).json({
+            //     err_code: 500, //状态码
+            //     message: 'Internal error.' //状态错误解释
+            // });
+            return next(err);
         }
         if (data) {
             // 邮箱或者昵称已存在
@@ -107,10 +109,11 @@ router.post('/register', function (req, res) {
         body.password = md5(md5(md5(body.password)));
         new User(body).save(function (err, user) {
             if (err) {
-                return res.status(500).json({
-                    err_code: 500,
-                    message: 'Internal error.'
-                });
+                // return res.status(500).json({
+                //     err_code: 500,
+                //     message: 'Internal error.'
+                // });
+                return next(err);
             }
 
             // 注册成功，使用 Session 记录用户的登录状态

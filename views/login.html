@@ -42,7 +42,6 @@
     $('#login_form').on('submit', function (e) {
       e.preventDefault()
       var formData = $(this).serialize()
-      console.log(formData)
       $.ajax({
         url: '/login',
         type: 'post',

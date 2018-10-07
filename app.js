@@ -2,7 +2,7 @@
  * @Author: yhf 
  * @Date: 2018-10-05 13:33:57 
  * @Last Modified by: yhf
- * @Last Modified time: 2018-10-07 15:18:34
+ * @Last Modified time: 2018-10-07 21:09:00
  */
 
 /**
@@ -70,9 +70,24 @@ app.use(session({
     saveUninitialized: false // 无论你是否使用 Session ，我都默认直接给你分配一把钥匙
 }))
 
-
 // 4.挂载路由 (把路由挂载到 app 中)
 app.use(router);
+
+
+// 配置一个处理 404 的中间件
+app.use(function (req, res) {
+    res.render('404.html');
+})
+
+
+
+// 配置一个全局错误处理中间件
+app.use(function (err,req,res,next) {
+    res.status(500).json({
+        err_code: 500,
+        message: err.message
+    })
+})
 
 
 // 5.启动服务
